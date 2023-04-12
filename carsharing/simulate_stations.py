@@ -93,4 +93,50 @@ def place_new_stations(
             y=centroids[len(station_locations) :, 1],
         )
     )
+    new_stations_gdf.rename({"geometry": "geom"}, axis=1)
+    new_stations_gdf.index.name = "station_no"
     return new_stations_gdf
+
+
+def place_vehicles(stations, mode="one_per_station"):
+    if mode == "one_per_station":
+        veh = pd.Series([[i] for i in range(len(stations))])
+        stations["vehicle_list"] = veh
+    else:
+        raise NotImplementedError("mode must be one of [one_per_station]")
+
+    return stations
+
+
+if __name__ == "__main__":
+    from carsharing.utils import read_trips_csv, write_stations_csv
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i",
+        "--inp_path",
+        type=str,
+        default=os.path.join("data", "siouxfalls_trips.csv"),
+        help="Path to trips file",
+    )
+    parser.add_argument(
+        "-o",
+        "--out_path",
+        type=str,
+        default=os.path.join("data", "stations.csv"),
+        help="Path where to output the simulated stations",
+    )
+    parser.add_argument(
+        "-n",
+        "--number_stations",
+        type=int,
+        default=100,
+        help="How many stations to place",
+    )
+    args = parser.parse_args()
+
+    trips = read_trips_csv(args.inp_path)
+    stations = place_new_stations(args.number_stations, trips)
+    stations = place_vehicles(stations)
+    write_stations_csv(stations, args.out_path)

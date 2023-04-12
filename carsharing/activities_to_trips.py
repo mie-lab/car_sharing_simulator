@@ -5,7 +5,7 @@ import pandas as pd
 import geopandas as gpd
 
 
-def xml_to_activities(xml_path):
+def xml_to_activities(xml_path, crs="EPSG:4326"):
     with open(xml_path, "r") as myfile:
         obj = xmltodict.parse(myfile.read())
 
@@ -26,9 +26,9 @@ def xml_to_activities(xml_path):
                 out_dict["purpose"].append(act["@type"])
                 # add start time
                 if "@start_time" in act.keys():
-                    out_dict["start_time"].append(act["@start_time"])
+                    out_dict["started_at"].append(act["@start_time"])
                 else:
-                    out_dict["start_time"].append(prev_end_time)
+                    out_dict["started_at"].append(prev_end_time)
                 # update prev end time
                 if "@end_time" in act.keys():
                     prev_end_time = act["@end_time"]
@@ -37,7 +37,9 @@ def xml_to_activities(xml_path):
     out_df = pd.DataFrame(out_dict)
     # transform to gdf
     out_df = gpd.GeoDataFrame(
-        out_df, geometry=gpd.points_from_xy(x=out_df["x"], y=out_df["y"])
+        out_df,
+        geometry=gpd.points_from_xy(x=out_df["x"], y=out_df["y"]),
+        crs=crs,
     ).drop(["x", "y"], axis=1)
     return out_df
 
@@ -47,9 +49,13 @@ def activities_to_trips(act_df):
     act_df["geom_origin"] = act_df["geometry"].shift(1)
     act_df["distance"] = act_df.distance(act_df["geom_origin"])
     act_df["purpose_origin"] = act_df["purpose"].shift(1)
+    act_df["started_at_origin"] = act_df["started_at"].shift(1)
     caraccess_dict = {"always": 1, "never": 0}
     act_df["feat_caraccess"] = act_df["feat_caraccess"].apply(
         lambda x: caraccess_dict.get(x, 0.5)
+    )
+    act_df["feat_sex"] = act_df["feat_sex"].apply(
+        lambda x: 0 if x == "m" else 1
     )
     act_df["feat_employed"] = act_df["feat_employed"].map({"yes": 1, "no": 0})
     act_df["purpose"] = act_df["purpose"].apply(
@@ -61,16 +67,33 @@ def activities_to_trips(act_df):
         columns={
             "geometry": "geom_destination",
             "purpose": "purpose_destination",
-            "start_time": "start_time_destination",
+            "started_at": "started_at_destination",
         }
     )
-    # TODO: wkt.dumps for geometry
     return act_df
 
 
 if __name__ == "__main__":
-    act_df = xml_to_activities(
-        os.path.join("data", "siouxfalls_population.xml")
+    from carsharing.utils import write_trips_csv
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i",
+        "--inp_path",
+        type=str,
+        default=os.path.join("data", "siouxfalls_population.xml"),
+        help="Path to XML file",
     )
+    parser.add_argument(
+        "-o",
+        "--out_path",
+        type=str,
+        default=os.path.join("data", "siouxfalls_trips.csv"),
+        help="Path where to output the trips",
+    )
+    args = parser.parse_args()
+
+    act_df = xml_to_activities(args.inp_path, crs="EPSG:26914")
     trips_df = activities_to_trips(act_df)
-    trips_df.to_csv(os.path.join("data", "siouxfalls_trips.csv"), index=False)
+    write_trips_csv(trips_df, args.out_path)

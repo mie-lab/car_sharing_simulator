@@ -19,6 +19,17 @@ pip install -e .
 
 To allow execution of our pipeline, we provide example data within this repository. To simulate car sharing trips based on that data, simply execute the following command:
 
+Download XML file [here](https://github.com/matsim-org/matsim-libs/blob/master/examples/scenarios/siouxfalls-2014/Siouxfalls_population.xml.gz).
+Convert activity-XML into trips-csv file
+```
+python carsharing/activities_to_trips.py
+```
+Simulate stations based on the population distribution
+```
+python carsharing/simulate_stations.py
+```
+
+Run car sharing simulation
 ```
 python scripts/generate_car_sharing_data.py -i ~/Downloads/example_data_carsharing_simulation/sim_2030_all_115k -o test -m trained_models/xgb_model.p -s ~/Downloads/example_data_carsharing_simulation/station_scenario_new1000_7500.csv 
 ```

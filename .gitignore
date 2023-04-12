@@ -2,8 +2,8 @@
 data/
 outputs/
 *.png
-trained_models/
 csv/
+deprecated_data/
 
 # Mac
 .DS_Store
