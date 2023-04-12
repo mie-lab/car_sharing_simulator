@@ -320,16 +320,19 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
     print("ratio of one way trips", sum(one_way) / len(one_way))
     # add some time to return the car
     duration_buffer = pd.Series(
-        [
-            dt.timedelta(hours=h)
-            for h in np.clip(
-                np.random.normal(
-                    mean_h_oneway, std_h_oneway, size=sum(one_way)
+        {
+            i: dt.timedelta(hours=h)
+            for i, h in zip(
+                sim_reservations[one_way].index,
+                np.clip(
+                    np.random.normal(
+                        mean_h_oneway, std_h_oneway, size=sum(one_way)
+                    ),
+                    0,
+                    None,
                 ),
-                0,
-                None,
             )
-        ]
+        }
     )
     sim_reservations.loc[one_way, "reservationto"] += duration_buffer
     sim_reservations.loc[one_way, "end_station_no"] = sim_reservations.loc[
@@ -340,7 +343,7 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
     sim_reservations["drive_km"] = sim_reservations["distance"] / 1000
     sim_reservations["duration"] = (
         sim_reservations["reservationto"] - sim_reservations["reservationfrom"]
-    ).total_seconds() / 3600
+    ).dt.total_seconds() / 3600
     print(
         "average duration of one way trips (after adding 2 hours):",
         np.mean((sim_reservations.loc[one_way, "duration"]).values),
