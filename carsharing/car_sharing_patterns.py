@@ -7,6 +7,7 @@ import pandas as pd
 from shapely import wkt
 from ast import literal_eval
 import warnings
+import datetime as dt
 
 from v2g4carsharing.import_data.import_utils import to_datetime_bizend
 
@@ -30,20 +31,20 @@ def derive_decision_time(
     acts_gdf_mode["drive_time"] = (
         60 * acts_gdf_mode["distance"] / (1000 * avg_drive_speed)
     )
+    drive_time_vals = acts_gdf_mode["drive_time"].values + 10
     # compute time for decision making
     acts_gdf_mode["mode_decision_time"] = (
         # in seconds, giving 10min decision time
-        acts_gdf_mode["start_time_sec_destination"]
-        - acts_gdf_mode["drive_time"] * 60
-        - 10 * 60
+        acts_gdf_mode["started_at_destination"]
+        - pd.Series([dt.timedelta(minutes=d) for d in drive_time_vals])
     )
     # drop the rows of activities that are repeated
     print("Number of activities", len(acts_gdf_mode))
     acts_gdf_mode = acts_gdf_mode[acts_gdf_mode["distance"] > 0]
     print("Activities after dropping 0-distance ones:", len(acts_gdf_mode))
 
-    # correct wrong decision times (sometimes they are lower than the one of the previous activity,
-    # due to rough approximation of vehicle speed)
+    # correct wrong decision times (sometimes they are lower than the one of
+    # the previous activity, due to rough approximation of vehicle speed)
     cond1, cond2 = np.array([True]), np.array([True])
     while np.sum(cond1 & cond2) > 0:
         acts_gdf_mode["prev_dec_time"] = acts_gdf_mode[
@@ -54,11 +55,15 @@ def derive_decision_time(
             acts_gdf_mode["prev_dec_time"] > acts_gdf_mode["mode_decision_time"]
         )
         cond2 = acts_gdf_mode["prev_person"] == acts_gdf_mode["person_id"]
-        # print(np.sum(cond1 & cond2))
-        # reset decision time to after the previously chosen
-        acts_gdf_mode.loc[(cond1 & cond2), "mode_decision_time"] = (
-            acts_gdf_mode.loc[(cond1 & cond2), "prev_dec_time"] + 2 * 60
-        )  # add five minutes to the previous decision time
+        if sum(cond1 & cond2) > 0:
+            # reset decision time to after the previously chosen
+            pad_sequence = pd.Series(
+                [dt.timedelta(minutes=2) for _ in range(sum(cond1 & cond2))]
+            )
+            acts_gdf_mode.loc[(cond1 & cond2), "mode_decision_time"] = (
+                acts_gdf_mode.loc[(cond1 & cond2), "prev_dec_time"]
+                + pad_sequence
+            )  # add two minutes to the previous decision time
 
     # now all the decision times should be sorted
     assert acts_gdf_mode.equals(
@@ -74,7 +79,7 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
     # keep track in a dictionary how many vehicles are available at each station
     per_station_veh_avail = station_scenario["vehicle_list"].to_dict()
     # keep track for each person where their shared trips started (station no and location ID)
-    shared_starting_station, shared_starting_location, prev_mode = {}, {}, {}
+    shared_starting_station, shared_starting_location = {}, {}
     # keep track of the vehicle ID of the currently borrowed car
     shared_vehicle_id = {}
     # keep list of cars that are scheduled to be given back at a certain time
@@ -131,7 +136,7 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
                 # schedule return of the vehicle at a certain time and place
                 scheduled_car_returns.append(
                     (
-                        row["start_time_sec_destination"],
+                        row["started_at_destination"],
                         shared_start,
                         shared_vehicle,
                     )
@@ -177,14 +182,6 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
                 "feat_distance_to_station_origin"
             ] = distances_to_available_stations.min()
 
-        # set prev mode feature dependent on previous decisions
-        prev_mode_of_person = prev_mode.get(person_id, "nomode")
-        if prev_mode_of_person != "nomode":
-            assert "feat_prev_" + prev_mode_of_person in row.index
-            row["feat_prev_" + prev_mode_of_person] = 1
-        else:
-            row["feat_prev_Mode::Car"] = 1  # by default, the prev mode is a car
-
         mode = mode_choice_function(row)
         # Hard cutoff if distance to car sharing station is disproportionally
         # large, or there is no free station
@@ -208,7 +205,6 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
             print(person_id, "borrowed car at station", closest_station)
 
         final_modes.append(mode)
-        prev_mode[person_id] = mode
         if mode != "Mode::CarsharingMobility":
             final_veh_ids.append(-1)
             final_start_station.append(-1)
@@ -297,7 +293,7 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
         "distance_to_station_origin": "first",
         "distance_to_station_destination": "last",
         "mode_decision_time": "first",  # first decision time is the start of the booking
-        "start_time_sec_destination": "last",  # last start time (of activity) is the end of the booking
+        "started_at_destination": "last",  # last start time (of activity) is the end of the booking
         "distance": "sum",  # covered distance
         "start_station_no": "first",  # first station must be the start station (possibly, the car is not returned)
         "end_station_no": "last",
@@ -309,8 +305,8 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
         columns={
             "id": "trip_ids",
             "person_id": "person_no",
-            "mode_decision_time": "reservationfrom_sec",
-            "start_time_sec_destination": "reservationto_sec",
+            "mode_decision_time": "reservationfrom",
+            "started_at_destination": "reservationto",
         }
     )
     sim_reservations.index.name = "reservation_no"
@@ -323,13 +319,19 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
     )
     print("ratio of one way trips", sum(one_way) / len(one_way))
     # add some time to return the car
-    sim_reservations.loc[one_way, "reservationto_sec"] += np.clip(
-        np.random.normal(
-            mean_h_oneway * 3600, std_h_oneway * 3600, size=sum(one_way)
-        ),
-        0,
-        None,
+    duration_buffer = pd.Series(
+        [
+            dt.timedelta(hours=h)
+            for h in np.clip(
+                np.random.normal(
+                    mean_h_oneway, std_h_oneway, size=sum(one_way)
+                ),
+                0,
+                None,
+            )
+        ]
     )
+    sim_reservations.loc[one_way, "reservationto"] += duration_buffer
     sim_reservations.loc[one_way, "end_station_no"] = sim_reservations.loc[
         one_way, "start_station_no"
     ]
@@ -337,13 +339,8 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
     # amend with some more information
     sim_reservations["drive_km"] = sim_reservations["distance"] / 1000
     sim_reservations["duration"] = (
-        (
-            sim_reservations["reservationto_sec"]
-            - sim_reservations["reservationfrom_sec"]
-        )
-        / 60
-        / 60
-    )
+        sim_reservations["reservationto"] - sim_reservations["reservationfrom"]
+    ).total_seconds() / 3600
     print(
         "average duration of one way trips (after adding 2 hours):",
         np.mean((sim_reservations.loc[one_way, "duration"]).values),
@@ -352,15 +349,6 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
         "average duration of return trips:",
         np.mean(sim_reservations.loc[~one_way, "duration"].values),
     )
-    # convert times
-    with open("config.json", "r") as infile:
-        date_simulation_2019 = json.load(infile)["date_simulation_2019"]
-    sim_reservations["reservationfrom"] = pd.to_datetime(
-        date_simulation_2019
-    ) + pd.to_timedelta(sim_reservations["reservationfrom_sec"], unit="S")
-    sim_reservations["reservationto"] = pd.to_datetime(
-        date_simulation_2019
-    ) + pd.to_timedelta(sim_reservations["reservationto_sec"], unit="S")
 
     return sim_reservations
 

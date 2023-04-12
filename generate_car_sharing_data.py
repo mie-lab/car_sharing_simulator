@@ -52,6 +52,8 @@ if __name__ == "__main__":
 
     # load activities and shared-cars availability
     acts_gdf = read_trips_csv(in_path_sim_trips, crs="EPSG:26914")
+    acts_gdf.index.name = "id"
+    acts_gdf.reset_index(inplace=True)
     # define mode choice model
     # mode_choice_model = simple_mode_choice
     with open(args.model_path, "rb") as infile:

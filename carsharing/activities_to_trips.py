@@ -24,6 +24,7 @@ def xml_to_activities(xml_path, crs="EPSG:4326"):
                 out_dict["feat_caraccess"].append(entry["@car_avail"])
                 out_dict["activity_index"].append(i)
                 out_dict["purpose"].append(act["@type"])
+                out_dict["location_id"].append(act["@facility"])
                 # add start time
                 if "@start_time" in act.keys():
                     out_dict["started_at"].append(act["@start_time"])
@@ -50,6 +51,7 @@ def activities_to_trips(act_df):
     act_df["distance"] = act_df.distance(act_df["geom_origin"])
     act_df["purpose_origin"] = act_df["purpose"].shift(1)
     act_df["started_at_origin"] = act_df["started_at"].shift(1)
+    act_df["location_id_origin"] = act_df["location_id"].shift(1)
     caraccess_dict = {"always": 1, "never": 0}
     act_df["feat_caraccess"] = act_df["feat_caraccess"].apply(
         lambda x: caraccess_dict.get(x, 0.5)
@@ -68,6 +70,7 @@ def activities_to_trips(act_df):
             "geometry": "geom_destination",
             "purpose": "purpose_destination",
             "started_at": "started_at_destination",
+            "location_id": "location_id_destination",
         }
     )
     return act_df

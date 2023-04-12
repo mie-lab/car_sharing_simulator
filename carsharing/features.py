@@ -8,7 +8,7 @@ import geopandas as gpd
 from shapely import wkt
 from datetime import timedelta
 
-from v2g4carsharing.simulate.car_sharing_patterns import load_trips
+from carsharing.utils import write_trips_csv
 
 
 def compute_dist_to_station(trips, station):
@@ -219,7 +219,7 @@ class ModeChoiceFeatures:
             )
         else:
             out_trips = self.trips
-        out_trips.to_csv(out_path)
+        write_trips_csv(out_trips, out_path)
 
 
 if __name__ == "__main__":
@@ -244,8 +244,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "-k",
         "--keep_geom",
-        action="store_true",
-        help="if flag set, keep the geometry column",
+        default=1,
+        type=int,
+        help="if set to 1, keep the geometry column",
     )
     parser.add_argument(
         "-o",
