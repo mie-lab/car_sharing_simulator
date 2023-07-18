@@ -29,9 +29,15 @@ Simulate stations based on the population distribution
 python carsharing/simulate_stations.py
 ```
 
+Transform trips-data into input features to the mode choice model:
+```
+python carsharing/features.py
+```
+Download the mode-choice prediction models [here](https://polybox.ethz.ch/index.php/s/U6Ge2Sb49rnRzV6) and copy the models from the `trained_models` folder in the zip to the `trained_models` folder in this repository. The [model tutorial](trained_models/model_usage_tutorial.ipynb) shows you how to use the models.
+
 Run car sharing simulation
 ```
-python scripts/generate_car_sharing_data.py -i ~/Downloads/example_data_carsharing_simulation/sim_2030_all_115k -o test -m trained_models/xgb_model.p -s ~/Downloads/example_data_carsharing_simulation/station_scenario_new1000_7500.csv 
+python generate_car_sharing_data.py -i data/siouxfalls_trips_features.csv -o outputs/siouxfalls_simulation -m trained_models/xgb.p -s data/stations.csv
 ```
 
 ## Car sharing simulation with your own data

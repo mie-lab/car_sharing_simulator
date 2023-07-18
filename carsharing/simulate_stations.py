@@ -7,14 +7,15 @@ import geopandas as gpd
 from shapely import wkt
 
 
-def station_placement_kmeans(X, k, fixed_stations):
+def station_placement_kmeans(X, k, fixed_stations, max_iters=50):
     x_df = pd.DataFrame(X)
     diff = 1
     cluster = np.zeros(X.shape[0])
     is_not_fixed = np.ones(X.shape[0])
     centroids_not_fixed = x_df.sample(n=k).values
     fixed_centroid_nr = len(fixed_stations)
-    while diff:
+    iters = 0
+    while diff and iters < max_iters:
         centroids = np.concatenate(
             (fixed_stations, centroids_not_fixed), axis=0
         )
@@ -24,7 +25,7 @@ def station_placement_kmeans(X, k, fixed_stations):
             dists = np.sum((centroids - row) ** 2, axis=1)
             cluster[i] = np.argmin(dists)
             is_not_fixed[i] = cluster[i] >= fixed_centroid_nr
-        print("time one iteration of Kmeans:", time.time() - tic)
+        print(f"Finished iteration {iters} of KMeans, time:", time.time() - tic)
 
         fixed_indicator = is_not_fixed.astype(bool)
         new_centroids = (
@@ -56,6 +57,7 @@ def station_placement_kmeans(X, k, fixed_stations):
             )
         else:
             centroids_not_fixed = new_centroids
+        iters += 1
 
     return centroids, cluster
 
@@ -93,7 +95,7 @@ def place_new_stations(
             y=centroids[len(station_locations) :, 1],
         )
     )
-    new_stations_gdf.rename({"geometry": "geom"}, axis=1)
+    new_stations_gdf.rename({"geometry": "geom"}, axis=1, inplace=True)
     new_stations_gdf.index.name = "station_no"
     return new_stations_gdf
 
@@ -139,4 +141,4 @@ if __name__ == "__main__":
     trips = read_trips_csv(args.inp_path)
     stations = place_new_stations(args.number_stations, trips)
     stations = place_vehicles(stations)
-    write_stations_csv(stations, args.out_path)
+    write_stations_csv(stations.reset_index(), args.out_path)

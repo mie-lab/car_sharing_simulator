@@ -4,6 +4,8 @@ outputs/
 *.png
 csv/
 deprecated_data/
+*.p
+*.zip
 
 # Mac
 .DS_Store

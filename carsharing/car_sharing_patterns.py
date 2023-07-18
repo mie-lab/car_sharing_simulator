@@ -211,7 +211,7 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
             final_end_station.append(-1)
         if len(final_modes) % 1000 == 0:
             print("decision time", row["mode_decision_time"])
-            print("Step:", len(final_modes), ": currend mode share:")
+            print("Step:", len(final_modes), ": current mode share:")
             uni, counts = np.unique(final_modes, return_counts=True)
             print({u: c for u, c in zip(uni, counts)})
 

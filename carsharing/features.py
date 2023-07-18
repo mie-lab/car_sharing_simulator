@@ -263,8 +263,6 @@ if __name__ == "__main__":
 
     feat_collector = ModeChoiceFeatures(trips, stations)
     feat_collector.add_all_features()
-    # TODO: train model that does not require halbtax and ga featuers
-    feat_collector.fake_ht_ga_features()
     feat_collector.save(
         out_path=args.out_path, remove_geom=(not args.keep_geom)
     )
