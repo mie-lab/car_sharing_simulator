@@ -37,8 +37,14 @@ Download the mode-choice prediction models [here](https://polybox.ethz.ch/index.
 
 Run car sharing simulation
 ```
-python scripts/generate_car_sharing_data.py -i data/siouxfalls_trips_features.csv -o outputs/siouxfalls_simulation -m trained_models/xgb.p -s data/stations.csv
+python scripts/generate_car_sharing_data.py -i data/siouxfalls_trips_features.csv -o outputs/siouxfalls_sim -m trained_models/xgb.p -s data/stations.csv
 ```
+
+Plot the results (figures will be saved in the output folder `outputs/siouxfalls_sim` by default)
+```
+python scripts/visualize_reservations.py
+```
+
 
 ## Car sharing simulation with your own data
 
