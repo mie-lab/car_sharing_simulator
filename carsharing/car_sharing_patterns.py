@@ -9,8 +9,6 @@ from ast import literal_eval
 import warnings
 import datetime as dt
 
-from v2g4carsharing.import_data.import_utils import to_datetime_bizend
-
 RANDOM_DATE = pd.to_datetime("2020-01-20")
 
 
@@ -165,13 +163,18 @@ def assign_mode(acts_gdf_mode, station_scenario, mode_choice_function):
                 for station_no in per_station_veh_avail.keys()
                 if len(per_station_veh_avail[station_no]) > 0
             ]
-            station_geometries = station_scenario[["geom"]].loc[
-                stations_with_vehicles
-            ]
-            distances_to_available_stations = station_geometries.distance(
-                row["geom_origin"]
-            )
-            closest_station = distances_to_available_stations.idxmin()
+            if len(stations_with_vehicles) == 0:
+                # no car available anywhere
+                closest_station = 0
+                distances_to_available_stations = pd.Series([100000]) # set to 100km
+            else:
+                station_geometries = station_scenario[["geom"]].loc[
+                    stations_with_vehicles
+                ]
+                distances_to_available_stations = station_geometries.distance(
+                    row["geom_origin"]
+                )
+                closest_station = distances_to_available_stations.idxmin()
             row["closest_station_origin"] = closest_station
             # update origin station in main dataframe for further use later
             acts_gdf_mode.loc[idx, "closest_station_origin"] = closest_station
