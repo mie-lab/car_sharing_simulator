@@ -25,7 +25,7 @@ if __name__ == "__main__":
     res = pd.read_csv(os.path.join(args.in_path, "sim_reservations.csv"))
     sim_modes = pd.read_csv(os.path.join(args.in_path, "sim_modes.csv"))
 
-    plot_modal_split(sim_modes, out_path=args.out_path)
     plot_station_dist(res, out_path=args.out_path)
+    plot_modal_split(sim_modes, out_path=args.out_path)
     for col in ["reservationfrom", "reservationto", "duration", "drive_km"]:
         plot_distribution(res, col, out_path=args.out_path)

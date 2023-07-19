@@ -1,9 +1,11 @@
 import os
+import argparse
+import pandas as pd
+import numpy as np
 from carsharing.stations import place_new_stations, place_vehicles
-if __name__ == "__main__":
-    from carsharing.utils import read_trips_csv, write_stations_csv
-    import argparse
+from carsharing.utils import read_trips_csv, write_stations_csv
 
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-i",
@@ -20,6 +22,13 @@ if __name__ == "__main__":
         help="Path where to output the simulated stations",
     )
     parser.add_argument(
+        "-f",
+        "--fixed_stations",
+        type=str,
+        default=os.path.join("data", "existing_stations.csv"),
+        help="Path to fixed stations that are already there",
+    )
+    parser.add_argument(
         "-n",
         "--number_stations",
         type=int,
@@ -28,7 +37,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    existing_stations = pd.read_csv(args.fixed_stations)
+    if len(existing_stations) == 0:
+        station_locations = np.zeros((0, 2))
+    else:
+        assert "x" in existing_stations.columns and "y" in existing_stations.columns, "station table requires x and y coordinates"
+        station_locations = np.array(existing_stations[["x", "y"]])
+
     trips = read_trips_csv(args.inp_path)
-    stations = place_new_stations(args.number_stations, trips)
+    stations = place_new_stations(args.number_stations, trips, station_locations=station_locations)
     stations = place_vehicles(stations)
     write_stations_csv(stations.reset_index(), args.out_path)

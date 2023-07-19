@@ -4,6 +4,7 @@ import os
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, ConfusionMatrixDisplay
 
 plt.style.use("seaborn")
 import scipy
@@ -62,6 +63,7 @@ def plot_station_dist(res, out_path=None):
         .agg({"start_station_no": "count"})
         .rename(columns={"start_station_no": "Station-wise bookings"})
     )
+    plt.figure(figsize=(8, 5))
     sns.histplot(data=stations_sim_reservation, x="Station-wise bookings")
     plt.ylabel("Number of stations")
     plt.tight_layout()
@@ -72,6 +74,7 @@ def plot_station_dist(res, out_path=None):
     
 def plot_modal_split(sim_modes, out_path=None):
     modes_grouped = sim_modes.groupby("mode")["mode"].count()
+    plt.figure(figsize=(8, 5))
     plt.bar(modes_grouped.index, modes_grouped)
     plt.xticks(np.arange(len(modes_grouped)), [g.split("::")[1] for g in modes_grouped.index], rotation=90)
     plt.xlabel("Mode")
@@ -81,3 +84,28 @@ def plot_modal_split(sim_modes, out_path=None):
         plt.savefig(os.path.join(out_path, "modal_split.pdf"))
     else:
         plt.show()
+
+
+def plot_confusion_matrix(
+    pred, labels_max_str, traintest="TRAIN", out_path=os.path.join("outputs", "mode_choice_model")
+):
+    print("----- ", traintest, "results")
+    print("Acc:", accuracy_score(labels_max_str, pred))
+    print("Balanced Acc:", balanced_accuracy_score(labels_max_str, pred))
+    for confusion_mode in [None, "true", "pred"]:
+        name = "" if confusion_mode is None else confusion_mode
+        fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+        ConfusionMatrixDisplay.from_predictions(
+            labels_max_str, pred, normalize=confusion_mode, xticks_rotation="vertical", values_format="2.2f", ax=ax
+        )
+        plt.tight_layout()
+        plt.savefig(os.path.join(out_path, f"random_forest_{traintest}_confusion_{name}.png"))
+
+def plot_feature_importance(features, feature_importances, out_path=os.path.join("outputs", "mode_choice_model")):
+    sorted_feats = features[np.argsort(feature_importances)]
+    sorted_importances = feature_importances[np.argsort(feature_importances)]
+    plt.figure(figsize=(10, 7))
+    plt.bar(sorted_feats, sorted_importances)
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_path, "feature_importances.png"))

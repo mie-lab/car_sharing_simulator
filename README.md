@@ -84,9 +84,22 @@ We allow for any kind of activity patterns as input, and do not restrict the inp
 
 Car sharing stations can either be simulated randomly based on the population density, or provided by the user. An example is given in the `data` folder. To generate random car sharing stations based on the population data, run
 
-We need to make a scenario which car sharing stations exist and what vehicles are available at these stations. So far, a simple scenario can be generated with
+We need to make a scenario which car sharing stations exist and what vehicles are available at these stations. We do this with a modified version of the KMEans algorith, were some cluster centers (aka stations) are fixed. You can use your own data for the fixed stations by saving them as data/existing_stations.csv (with two columns x and y).
+
+Usage:
 ```
-python scripts/simulate_stations.py
+simulate_stations.py [-h] [-i INP_PATH] [-o OUT_PATH] [-f FIXED_STATIONS] [-n NUMBER_STATIONS]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INP_PATH, --inp_path INP_PATH
+                        Path to trips file
+  -o OUT_PATH, --out_path OUT_PATH
+                        Path where to output the simulated stations
+  -f FIXED_STATIONS, --fixed_stations FIXED_STATIONS
+                        Path to fixed stations that are already there
+  -n NUMBER_STATIONS, --number_stations NUMBER_STATIONS
+                        How many stations to place
 ```
 
 ### Run simulation

@@ -63,7 +63,7 @@ def station_placement_kmeans(X, k, fixed_stations, max_iters=50):
 
 
 def place_new_stations(
-    nr_new_stations, trips_simple, station_locations=None,
+    nr_new_stations, trips_simple, station_locations,
 ):
     # use geom_origin
     if not isinstance(trips_simple, gpd.GeoDataFrame):
@@ -76,9 +76,6 @@ def place_new_stations(
     population_locations = np.vstack(
         [trips_simple.geometry.x.values, trips_simple.geometry.y.values]
     ).swapaxes(1, 0)
-
-    if station_locations is None:
-        station_locations = np.zeros((0, 2))
 
     # run kmeans
     centroids, _ = station_placement_kmeans(
