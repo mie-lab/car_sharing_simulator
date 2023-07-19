@@ -15,7 +15,6 @@ def prepare_data(trips, min_number_trips=200, return_normed=False, drop_columns=
     nr_trips_with_mode = trips[[col for col in trips.columns if col.startswith("Mode")]].sum()
     included_modes = list(nr_trips_with_mode[nr_trips_with_mode > min_number_trips].index.tolist())
     print("included_modes", included_modes)
-    # TODO: group into public transport, slow transport, car, shared car
 
     # only get feature and label columns
     feat_cols = [col for col in dataset.columns if col.startswith("feat")]

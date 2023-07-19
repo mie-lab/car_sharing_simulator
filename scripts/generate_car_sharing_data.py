@@ -10,6 +10,7 @@ from carsharing.car_sharing_patterns import (
     assign_mode,
 )
 from carsharing.utils import read_stations_csv, read_trips_csv
+from carsharing.mode_choice_models import BasicModeChoice
 
 if __name__ == "__main__":
     # args
@@ -56,8 +57,12 @@ if __name__ == "__main__":
     acts_gdf.reset_index(inplace=True)
     # define mode choice model
     # mode_choice_model = simple_mode_choice
-    with open(args.model_path, "rb") as infile:
-        mode_choice_model = pickle.load(infile)
+    if args.model_path == "simple":
+        mode_choice_model = BasicModeChoice()
+        print("Using basic mode choice model")
+    else:
+        with open(args.model_path, "rb") as infile:
+            mode_choice_model = pickle.load(infile)
 
     station_scenario = read_stations_csv(
         args.station_scenario, geom_col="geometry", crs="EPSG:26914"

@@ -9,7 +9,7 @@ from carsharing.plotting import plot_confusion_matrix
 
 class BasicModeChoice:
     """basic mode choice model based on the distance"""
-    def __call__(feature_vec):
+    def __call__(self, feature_vec):
         distance = feature_vec["distance"]
         distance_to_station = feature_vec["distance_to_station_origin"]
         if distance < 2 * distance_to_station:
