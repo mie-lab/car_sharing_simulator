@@ -84,7 +84,9 @@ optional arguments:
 
 The mode choice model is the most important part of the simulation. It decides when people use car sharing for their trips. We provide a mode choice model (download [here](https://polybox.ethz.ch/index.php/s/U6Ge2Sb49rnRzV6)), which is however trained on a dataset of users in Switzerland. Users in other cities may behave very differently, so you should decide carefully whether you want to use your own model. 
 
-Our mode choice models uses the following input features for inference (to assign a mode to a trip):
+First, we **provide sample code for a very basic mode choice model** [here](carsharing/mode_choice_models.py) (class `BasicModeChoiceModel`). You can modify this code for a handcrafted mode-inference function.
+
+Secondly, we provide two XGBoost models that were trained on the behaviour of car sharing users from the [MOBIS dataset](https://ivtmobis.ethz.ch/mobis/covid19/reports/latest#MOBIS-COVID19). They were trained on to use the following input features for inference (to assign a mode to a trip):
 * feat_age: Age in years
 * feat_sex: 1 = female, 0 = male
 * feat_caraccess: 1 if the person owns a car, 0 else:
@@ -109,7 +111,20 @@ Our mode choice models uses the following input features for inference (to assig
 * feat_destination_hour: Hour of the day when starting the activity at the origin location - number from 0 to 24
 * feat_destination_day: Weekday when at destination location (Number from 0 to 6)
 
-In addition, we **provide sample code for a very basic mode choice model** [here](carsharing/mode_choice_models.py) (class `BasicModeChoiceModel`). You can modify this code for a handcrafted mode-inference function.
+You can also train an XGBoost model on your own data with our code. For this purpose, run
+```
+python train_mode_choice_model.py [-h] [-s MODEL_SAVE_PATH] [-i IN_PATH_MOBIS] [-o OUT_PATH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s MODEL_SAVE_PATH, --model_save_path MODEL_SAVE_PATH
+                        path to save model
+  -i IN_PATH_MOBIS, --in_path_mobis IN_PATH_MOBIS
+                        path to mobis feature dataset
+  -o OUT_PATH, --out_path OUT_PATH
+                        path to save training results
+```
+The model is by default saved as `trained_models/xgb.p` and the test and train performance evaluation is saved in `outputs/mode_choice_model` by default.
 
 ### Run simulation
 
