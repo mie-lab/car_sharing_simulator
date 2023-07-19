@@ -344,6 +344,7 @@ def derive_reservations(acts_gdf_mode, mean_h_oneway=1.7, std_h_oneway=0.7):
 
     # amend with some more information
     sim_reservations["drive_km"] = sim_reservations["distance"] / 1000
+    sim_reservations.drop("distance", axis=1, inplace=True)
     sim_reservations["duration"] = (
         sim_reservations["reservationto"] - sim_reservations["reservationfrom"]
     ).dt.total_seconds() / 3600

@@ -46,7 +46,7 @@ python scripts/generate_car_sharing_data.py -i data/siouxfalls_trips_features.cs
 
 Our agent-based simulator is based on a population and their activity patterns. By activity patterns we mean the start and end times and locations of their activities over one day. Such data can be generated with [Equasim](https://github.com/eqasim-org/), a synthetic-population framework published by the IVT group at ETH Zürich. Their pipeline uses census data and transport survey data to simulate activity patterns and living / working locations of people. It also allows to scale the population for the purpose of studying future car sharing behaviour.
 
-We used their pipeline but adapted it to **sample car sharing users** from the overall population. The changed code is copied here for version control. We sample car sharing users with stratisfied sampling based on the distance of the people to the next car sharing station. See our [script](https://github.com/mie-lab/v2g4carsharing/blob/master/v2g4carsharing/simulate/draw_car_sharing_population.py) for this code.
+We used their pipeline but adapted it to **sample car sharing users** from the overall population. We sample car sharing users with stratisfied sampling based on the distance of the people to the next car sharing station. See our [script](https://github.com/mie-lab/v2g4carsharing/blob/master/v2g4carsharing/simulate/draw_car_sharing_population.py) for this code.
 
 We allow for any kind of activity patterns as input, and do not restrict the input to equasim-outputs. The **activity patterns must simply be of a similar form as the example data data** in the `data` folder. Specifically, we support the following features to describe trips:
 * feat_age: Age in years
