@@ -2,6 +2,8 @@
 
 This repository provides the code for our open-source car sharing simulator. The simulator is agent-based and only requires a population and their activity patterns as input. We have trained a mode choice model on tracking data from Switzerland, and this model is applied on the activity to generate car sharing data. The steps to simulate car sharing reservation data are described in detail in the following.
 
+The study conducted using this code was published in Applied Energy, titled [Vehicle-to-grid for car sharing-A simulation study for 2030](https://doi.org/10.1016/j.apenergy.2024.123731).
+
 <img src="assets/sim_pipeline.jpg" width="500" />
 
 ### Installation
@@ -149,6 +151,20 @@ optional arguments:
 For the model, you can train a model or use on of our pretrained models, which you can download [here](https://polybox.ethz.ch/index.php/s/U6Ge2Sb49rnRzV6). The usage of these models and their supported inputs and outputs is described in the [tutorial](trained_models/model_usage_tutorial.ipynb).
 
 
+## References
 
+If you build up on our work, please consider citing our paper:
 
+Wiedemann, N., Xin, Y., Medici, V., Nespoli, L., Suel, E., & Raubal, M. (2024). Vehicle-to-grid for car sharing-A simulation study for 2030. Applied Energy, 372, 123731.
 
+```bib
+@article{wiedemann2024vehicle,
+  title={Vehicle-to-grid for car sharing-A simulation study for 2030},
+  author={Wiedemann, Nina and Xin, Yanan and Medici, Vasco and Nespoli, Lorenzo and Suel, Esra and Raubal, Martin},
+  journal={Applied Energy},
+  volume={372},
+  pages={123731},
+  year={2024},
+  publisher={Elsevier}
+}
+```
