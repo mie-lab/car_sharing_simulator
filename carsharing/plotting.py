@@ -6,7 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, ConfusionMatrixDisplay
 
-plt.style.use("seaborn")
 import scipy
 import seaborn as sns
 
@@ -28,7 +27,7 @@ def plot_distribution(res_in, col_name, out_path=None):
     res = res_in.copy()
     plt.figure(figsize=(5, 5))
     sim_col_update = {}
-    
+
     if col_name == "duration":
         res = res.dropna(subset=[col_name])
         bins = np.arange(24)

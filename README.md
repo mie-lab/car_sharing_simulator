@@ -21,7 +21,7 @@ pip install -e .
 
 To allow execution of our pipeline, we provide example data within this repository. To simulate car sharing trips based on that data, simply execute the following command:
 
-Download XML file [here](https://github.com/matsim-org/matsim-libs/blob/master/examples/scenarios/siouxfalls-2014/Siouxfalls_population.xml.gz).
+Download XML file [here](https://github.com/matsim-org/matsim-libs/blob/master/examples/scenarios/siouxfalls-2014/Siouxfalls_population.xml.gz), extract it, and put the `Siouxfalls_population.xml` file into the `data` folder.
 Convert activity-XML into trips-csv file
 ```
 python scripts/activities_to_trips.py

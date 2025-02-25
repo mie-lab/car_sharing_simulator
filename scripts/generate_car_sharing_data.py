@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "-m",
         "--model_path",
         type=str,
-        default=os.path.join("trained_models", "xgb_model.p"),
+        default=os.path.join("trained_models", "xgb.p"),
         help="path to mode choice model",
     )
     # path to use for postgis_json_path argument: "../../dblogin_mielab.json"

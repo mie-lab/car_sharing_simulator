@@ -10,7 +10,7 @@ if __name__ == "__main__":
         "-i",
         "--inp_path",
         type=str,
-        default=os.path.join("data", "siouxfalls_population.xml"),
+        default=os.path.join("data", "Siouxfalls_population.xml"),
         help="Path to XML file",
     )
     parser.add_argument(
