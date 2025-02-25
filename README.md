@@ -81,6 +81,7 @@ optional arguments:
   -n NUMBER_STATIONS, --number_stations NUMBER_STATIONS
                         How many stations to place
 ```
+NOTE: By default, we assume that there are no existing car sharing stations in the test dataset from Siouxfalls. If you want to fix some station locations, e.g. if there is already a car sharing system in place, please add the coordinates to [this file](data/existing_stations.csv).
 
 ### Choose a mode choice model
 
