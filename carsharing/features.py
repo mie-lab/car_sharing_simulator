@@ -29,7 +29,8 @@ def compute_dist_to_station(trips, station):
         station[["geom"]], distance_col="distance_to_station_origin"
     )
     trips.rename(
-        columns={"index_right": "closest_station_origin"}, inplace=True
+        columns={"index_right": "closest_station_origin", 
+                 "station_no": "closest_station_origin"}, inplace=True
     )
     # get closest station to destination
     trips.set_geometry("geom_destination", inplace=True)
@@ -38,7 +39,10 @@ def compute_dist_to_station(trips, station):
         station[["geom"]], distance_col="distance_to_station_destination"
     )
     trips.rename(
-        columns={"index_right": "closest_station_destination"}, inplace=True
+        columns={
+            "index_right": "closest_station_destination", 
+            "station_no": "closest_station_destination"
+        }, inplace=True
     )
     return trips
 
