@@ -9,7 +9,7 @@ from ast import literal_eval
 import warnings
 import datetime as dt
 
-RANDOM_DATE = pd.to_datetime("2020-01-20")
+RANDOM_DATE = dt.datetime.strptime("2020-01-20", "%Y-%m-%d")
 
 
 def derive_decision_time(
